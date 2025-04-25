@@ -1,3 +1,6 @@
+#ifndef BMP8_H
+#define BMP8_H
+
 typedef struct {
 unsigned char header[54];
 unsigned char colorTable[1024];
@@ -14,7 +17,6 @@ void bmp8_free(t_bmp8 * img);
 void bmp8_printInfo(t_bmp8 * img);
 
 
-#ifndef BMP8_H
-#define BMP8_H
+
 
 #endif //BMP8_H

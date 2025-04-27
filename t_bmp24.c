@@ -1,5 +1,2 @@
-//
-// Created by jules on 27/04/2025.
-//
-
+// a compléter à l'avenir
 #include "t_bmp24.h"

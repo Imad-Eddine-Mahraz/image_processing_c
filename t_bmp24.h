@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-// Définition des structures
+// =========================================== Définition des structures =========================================
 typedef struct {
     uint16_t type;
     uint32_t size;
@@ -42,7 +42,7 @@ typedef struct {
     t_pixel **data;
 } t_bmp24;
 
-// Déclarations des fonctions
+// ================================ Déclarations des fonctions ===============================================
 t_pixel **bmp24_allocateDataPixels(int width, int height);
 void bmp24_freeDataPixels(t_pixel **pixels, int height);
 

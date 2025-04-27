@@ -49,7 +49,6 @@ if (fread(img->header, sizeof(unsigned char), 54, file) != 54) {
         free(img);
         return NULL;
     }
-    // Allouer la mémoire pour les données d'image
     img->data = (unsigned char *)malloc(img->dataSize * sizeof(unsigned char));
     if (img->data == NULL) {
         printf("Erreur : échec de l'allocation mémoire pour les données de l'image\n");

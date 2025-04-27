@@ -142,3 +142,47 @@ void bmp8_threshold(t_bmp8 *img, int threshold) {
     }
 }
 
+void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
+    if (img == NULL || img->data == NULL || kernel == NULL) {
+        printf("Erreur : image ou noyau invalide.\n");
+        return;
+    }
+    int width = img->width;
+    int height = img->height;
+    int n = kernelSize / 2;  // n est la moitié du noyau
+
+    // Allouer un tableau temporaire pour stocker l'image originale
+    unsigned char *originalData = (unsigned char *)malloc(img->dataSize * sizeof(unsigned char));
+    if (originalData == NULL) {
+        printf("Erreur : échec de l'allocation mémoire pour la copie de l'image.\n");
+        return;
+    }
+    // Copier les données à la main (au lieu de memcpy)
+    for (unsigned int i = 0; i < img->dataSize; i++) {
+        originalData[i] = img->data[i];
+    }
+    // Appliquer la convolution sur les pixels "non bords"
+    for (int y = 1; y < height - 1; y++) {
+        for (int x = 1; x < width - 1; x++) {
+            float sum = 0.0f;
+
+            // Appliquer le noyau sur les voisins
+            for (int i = -n; i <= n; i++) {
+                for (int j = -n; j <= n; j++) {
+                    int neighborX = x + j;
+                    int neighborY = y + i;
+                    unsigned char pixelValue = originalData[neighborY * width + neighborX];
+                    sum += pixelValue * kernel[i + n][j + n];
+                }
+            }
+            // Clamper la valeur entre 0 et 255
+            if (sum < 0) sum = 0;
+            if (sum > 255) sum = 255;
+
+            img->data[y * width + x] = (unsigned char)sum;
+        }
+    }
+    // Libérer la mémoire temporaire
+    free(originalData);
+}
+

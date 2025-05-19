@@ -5,33 +5,31 @@
 
 
 t_bmp8 * bmp8_loadImage(const char * filename){
-FILE *file = fopen(filename, "rb");  // ouvrir le fichier en mode binaire
+FILE *file = fopen(filename, "rb");
 if (file == NULL) {
     printf("Erreur : impossible d'ouvrir le fichier %s\n", filename);
     return NULL;
 }
-    // Allocation de la structure t_bmp8
+
 t_bmp8 *img = (t_bmp8 *)malloc(sizeof(t_bmp8));
 if (img == NULL) {
    printf("Erreur : échec de l'allocation mémoire pour l'image\n");
    fclose(file);
    return NULL;
 }
-    // Lire les 54 octets de l'en-tête
+
 if (fread(img->header, sizeof(unsigned char), 54, file) != 54) {
    printf("Erreur : échec de lecture de l'en-tête BMP\n");
    fclose(file);
    free(img);
    return NULL;
 }
-    // Vérifier que c’est bien un fichier BMP (signature 'BM')
     if (img->header[0] != 'B' || img->header[1] != 'M') {
         printf("Erreur : le fichier n'est pas un fichier BMP valide\n");
         fclose(file);
         free(img);
         return NULL;
     }
-    // Extraire les informations importantes de l’en-tête
     img->width       = *(unsigned int *)&img->header[18];
     img->height      = *(unsigned int *)&img->header[22];
     img->colorDepth  = *(unsigned short *)&img->header[28];
@@ -51,7 +49,6 @@ if (fread(img->header, sizeof(unsigned char), 54, file) != 54) {
         free(img);
         return NULL;
     }
-    // Allouer la mémoire pour les données d'image
     img->data = (unsigned char *)malloc(img->dataSize * sizeof(unsigned char));
     if (img->data == NULL) {
         printf("Erreur : échec de l'allocation mémoire pour les données de l'image\n");
@@ -59,9 +56,8 @@ if (fread(img->header, sizeof(unsigned char), 54, file) != 54) {
         free(img);
         return NULL;
     }
-    // Se déplacer à l’offset des données (juste au cas où)
     fseek(file, offset, SEEK_SET);
-    // Lire les données de l’image
+
     if (fread(img->data, sizeof(unsigned char), img->dataSize, file) != img->dataSize) {
         printf("Erreur : échec de lecture des données de l'image\n");
         fclose(file);
@@ -112,7 +108,6 @@ void bmp8_brightness(t_bmp8 *img, int value) {
         printf("Erreur : image invalide.\n");
         return;
     }
-    // Modifier la valeur de chaque pixel
     for (int i = 0; i < img->dataSize; i++) {
         int new_pixel_value = img->data[i] + value;
         // Ne pas dépasser les limites
@@ -132,7 +127,7 @@ void bmp8_threshold(t_bmp8 *img, int threshold) {
         printf("Erreur : image invalide.\n");
         return;
     }
-    // Application a chaque pixel
+
     for (int i = 0; i < img->dataSize; i++) {
         if (img->data[i] >= threshold) {
             img->data[i] = 255;
@@ -151,7 +146,7 @@ void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
     int height = img->height;
     int n = kernelSize / 2;  // n est la moitié du noyau
 
-    // Allouer un tableau temporaire pour stocker l'image originale
+
     unsigned char *originalData = (unsigned char *)malloc(img->dataSize * sizeof(unsigned char));
     if (originalData == NULL) {
         printf("Erreur : échec de l'allocation mémoire pour la copie de l'image.\n");
@@ -161,7 +156,7 @@ void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
     for (unsigned int i = 0; i < img->dataSize; i++) {
         originalData[i] = img->data[i];
     }
-    // Appliquer la convolution sur les pixels "non bords"
+
     for (int y = 1; y < height - 1; y++) {
         for (int x = 1; x < width - 1; x++) {
             float sum = 0.0f;
@@ -175,14 +170,14 @@ void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
                     sum += pixelValue * kernel[i + n][j + n];
                 }
             }
-            // Clamper la valeur entre 0 et 255
+
             if (sum < 0) sum = 0;
             if (sum > 255) sum = 255;
 
             img->data[y * width + x] = (unsigned char)sum;
         }
     }
-    // Libérer la mémoire temporaire
+
     free(originalData);
 }
 

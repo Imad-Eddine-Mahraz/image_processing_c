@@ -118,7 +118,7 @@ t_bmp24 *bmp24_loadImage(const char *filename) {
 void bmp24_saveImage(t_bmp24 *img, const char *filename) {
     FILE *file = fopen(filename, "wb");
     if (!file) {
-        printf("Erreur : impossible de créer le fichier %s\n", filename);
+        printf("Erreur :impossible de créer le fichier %s\n", filename);
         return;
     }
 

@@ -5,7 +5,7 @@
 
 
 
-t_pixel ** bmp24_allocateDataPixels(int width, int height) {
+/*t_pixel ** bmp24_allocateDataPixels(int width, int height) {
     t_pixel **pixels = malloc(height * sizeof(t_pixel *));
     if (!pixels) {
         printf("Erreur : échec de l'allocation de la mémoire pour les lignes de pixels.\n");
@@ -142,9 +142,5 @@ void bmp24_saveImage(t_bmp24 *img, const char *filename) {
     }
 
     fclose(file);
-}
-
-
-
-
+} */
 

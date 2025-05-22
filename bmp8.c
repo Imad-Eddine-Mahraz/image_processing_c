@@ -68,6 +68,42 @@ if (fread(img->header, sizeof(unsigned char), 54, file) != 54) {
     fclose(file);
     return img;
 }
+void bmp8_saveImage(const char *filename, t_bmp8 *img) {
+    if (filename == NULL || img == NULL) {
+        printf("Erreur : nom de fichier ou image invalide.\n");
+        return;
+    }
+
+    FILE *file = fopen(filename, "wb");  // "wb" = write binary
+    if (file == NULL) {
+        printf("Erreur : impossible d'ouvrir le fichier %s en écriture.\n", filename);
+        return;
+    }
+
+    // Écrire l'en-tête BMP (54 octets)
+    if (fwrite(img->header, sizeof(unsigned char), 54, file) != 54) {
+        printf("Erreur : échec de l'écriture de l'en-tête BMP dans %s\n", filename);
+        fclose(file);
+        return;
+    }
+
+    // Écrire la table des couleurs (1024 octets pour 256 niveaux de gris)
+    if (fwrite(img->colorTable, sizeof(unsigned char), 1024, file) != 1024) {
+        printf("Erreur : échec de l'écriture de la table de couleurs dans %s\n", filename);
+        fclose(file);
+        return;
+    }
+
+    // Écrire les données de l'image
+    if (fwrite(img->data, sizeof(unsigned char), img->dataSize, file) != img->dataSize) {
+        printf("Erreur : échec de l'écriture des données de l'image dans %s\n", filename);
+        fclose(file);
+        return;
+    }
+
+    fclose(file);
+    printf("Image enregistrée avec succès dans %s\n", filename);
+}
 
 void bmp8_free(t_bmp8 *img) {
     if (img != NULL) {

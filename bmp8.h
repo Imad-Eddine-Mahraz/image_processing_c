@@ -1,5 +1,9 @@
 #ifndef BMP8_H
 #define BMP8_H
+#define HEADER_SIZE 54
+#define COLOR_TABLE_SIZE 1024
+
+
 
 typedef struct {
 unsigned char header[54];

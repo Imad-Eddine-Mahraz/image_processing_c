@@ -1,6 +1,6 @@
 #ifndef BMP24_H
 #define BMP24_H
-
+#pragma pack(push, 1) // pour eviter le padding de structure
 #include <stdint.h>
 #include <stdio.h>
 
@@ -68,6 +68,7 @@ void bmp24_negative(t_bmp24 *img);
 void bmp24_grayscale(t_bmp24 *img);
 void bmp24_brightness(t_bmp24 *img, int value);
 
+void bmp24_applyFilter(t_bmp24 *img, float **kernel, int kernelSize);
 t_pixel bmp24_convolution(t_bmp24 *img, int x, int y, float **kernel, int kernelSize);
 
 void bmp24_boxBlur(t_bmp24 *img);

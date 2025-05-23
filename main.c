@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "bmp8.h"
+#include "t_bmp24.h"
 
 // Noyaux 3x3 statiques
 float kernel_box_blur[3][3] = {
@@ -52,67 +52,60 @@ void freeKernel(float **kernel) {
 }
 
 int main() {
-    const char *input = "../image/barbara_gray.bmp";
+    const char *input = "../image/flowers_color.bmp";
 
-    // Afficher les infos de base
-    t_bmp8 *img = bmp8_loadImage(input);
+    // Charger l'image couleur
+    t_bmp24 *img = bmp24_loadImage(input);
     if (!img) {
-        printf("Erreur : impossible de charger l'image d'origine.\n");
+        printf("Erreur : impossible de charger l'image couleur.\n");
         return 1;
     }
-    bmp8_printInfo(img);
+
+    // Afficher les informations
+    printf("Image chargée : %dx%d, profondeur %d bits\n", img->width, img->height, img->colorDepth);
 
     // Appliquer le négatif
-    bmp8_negative(img);
-    bmp8_saveImage("../Image/barbara_gray_negative.bmp", img);
+    bmp24_negative(img);
+    bmp24_saveImage(img, "../Image/flowers_negative.bmp");
+
+    // Appliquer la conversion en niveaux de gris
+    bmp24_grayscale(img);
+    bmp24_saveImage(img, "../Image/flowers_grayscale.bmp");
 
     // Appliquer la luminosité +50
-    bmp8_brightness(img, 50);
-    bmp8_saveImage("../Image/barbara_gray_brightness.bmp", img);
+    bmp24_brightness(img, 50);
+    bmp24_saveImage(img, "../Image/flowers_brightness.bmp");
 
-    // Appliquer le seuillage à 128
-    bmp8_threshold(img, 128);
-    bmp8_saveImage("../Image/barbara_gray_threshold.bmp", img);
-
-    // Appliquer les filtres de convolution
-    img = bmp8_loadImage(input);
+    // Appliquer les filtres de convolution (sans recharger, enchaînés)
     float **k;
 
     k = toFloatPtr(kernel_box_blur);
-    bmp8_applyFilter(img, k, 3);
-    bmp8_saveImage("../Image/barbara_gray_boxblur.bmp", img);
-    bmp8_free(img);
-
+    bmp24_applyFilter(img, k, 3);
+    bmp24_saveImage(img, "../Image/flowers_boxblur.bmp");
     freeKernel(k);
 
     k = toFloatPtr(kernel_gaussian_blur);
-    bmp8_applyFilter(img, k, 3);
-    bmp8_saveImage("../Image/barbara_gray_gaussian.bmp", img);
-    bmp8_free(img);
+    bmp24_applyFilter(img, k, 3);
+    bmp24_saveImage(img, "../Image/flowers_gaussian.bmp");
     freeKernel(k);
-
 
     k = toFloatPtr(kernel_outline);
-    bmp8_applyFilter(img, k, 3);
-    bmp8_saveImage("../Image/barbara_gray_outline.bmp", img);
-    bmp8_free(img);
+    bmp24_applyFilter(img, k, 3);
+    bmp24_saveImage(img, "../Image/flowers_outline.bmp");
     freeKernel(k);
 
-
     k = toFloatPtr(kernel_emboss);
-    bmp8_applyFilter(img, k, 3);
-    bmp8_saveImage("../Image/barbara_gray_emboss.bmp", img);
-    bmp8_free(img);
+    bmp24_applyFilter(img, k, 3);
+    bmp24_saveImage(img, "../Image/flowers_emboss.bmp");
     freeKernel(k);
 
     k = toFloatPtr(kernel_sharpen);
-    bmp8_applyFilter(img, k, 3);
-    bmp8_saveImage("../Image/barbara_gray_sharpen.bmp", img);
-    bmp8_free(img);
+    bmp24_applyFilter(img, k, 3);
+    bmp24_saveImage(img, "../Image/flowers_sharpen.bmp");
     freeKernel(k);
 
-    printf("\n Tous les filtres ont été appliqués et enregistrés.\n");
+    bmp24_free(img);
+    printf("\nTous les filtres ont été appliqués et enregistrés.\n");
 
     return 0;
 }
-

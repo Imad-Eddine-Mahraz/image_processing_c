@@ -57,7 +57,7 @@ int main() {
     // Charger l'image couleur
     t_bmp24 *img = bmp24_loadImage(input);
     if (!img) {
-        printf("Erreur : impossible de charger l'image couleur.\n");
+        printf("Erreur :impossible de charger l'image couleur.\n");
         return 1;
     }
 

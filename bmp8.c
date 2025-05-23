@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-
+// =============================================== Fonction de la partie 1 ===============================================
 t_bmp8 * bmp8_loadImage(const char * filename) {
     FILE * file = NULL;
 
@@ -166,7 +166,7 @@ void bmp8_threshold(t_bmp8 *img, int threshold) {
 
 void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
     if (img == NULL || img->data == NULL || kernel == NULL) {
-        printf("Erreur : image ou noyau invalide.\n");
+        printf("Erreur :image ou noyau invalide.\n");
         return;
     }
     int width = img->width;
@@ -208,3 +208,4 @@ void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
     free(originalData);
 }
 
+// ====================================================== Fonction de la partie 3 ======================================

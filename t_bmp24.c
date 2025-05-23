@@ -221,7 +221,7 @@ void bmp24_saveImage(t_bmp24 *img, const char *filename) {
     bmp24_writePixelData(img, file);
 
     fclose(file);
-    printf("Image enregistrée avec succès dans \"%s\"\n", filename);
+    printf("Image enregistrée avec succè dans \"%s\"\n", filename);
 }
 
 

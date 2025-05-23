@@ -94,7 +94,7 @@ void bmp8_saveImage(const char * filename, t_bmp8 * img) {
     printf("Image enregistrée avec succès dans le dossier Images'%s'\n", filename);
 }
 
-}
+
 
 void bmp8_free(t_bmp8 *img) {
     if (img != NULL) {

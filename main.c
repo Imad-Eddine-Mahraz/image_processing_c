@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "bmp8.h"
 
+// Noyaux 3x3 statiques
 float kernel_box_blur[3][3] = {
     {1.0/9, 1.0/9, 1.0/9},
     {1.0/9, 1.0/9, 1.0/9},
@@ -32,61 +33,86 @@ float kernel_sharpen[3][3] = {
     { 0, -1,  0}
 };
 
-int main() {
-    t_bmp8 *img = bmp8_loadImage("../image/barbara_gray.bmp");
-    if (!img) return 1;
+float **toFloatPtr(float kernel[3][3]) {
+    float **result = malloc(3 * sizeof(float *));
+    for (int i = 0; i < 3; i++) {
+        result[i] = malloc(3 * sizeof(float));
+        for (int j = 0; j < 3; j++) {
+            result[i][j] = kernel[i][j];
+        }
+    }
+    return result;
+}
 
+void freeKernel(float **kernel) {
+    for (int i = 0; i < 3; i++) {
+        free(kernel[i]);
+    }
+    free(kernel);
+}
+
+int main() {
+    const char *input = "../image/barbara_gray.bmp";
+
+    // Afficher les infos de base
+    t_bmp8 *img = bmp8_loadImage(input);
+    if (!img) {
+        printf("Erreur : impossible de charger l'image d'origine.\n");
+        return 1;
+    }
     bmp8_printInfo(img);
 
-    // 1. Négatif
-    t_bmp8 *neg = bmp8_loadImage("../image/barbara_gray.bmp");
-    bmp8_negative(neg);
-    bmp8_saveImage("barbara_gray_negative.bmp", neg);
-    bmp8_free(neg);
+    // Appliquer le négatif
+    bmp8_negative(img);
+    bmp8_saveImage("../Image/barbara_gray_negative.bmp", img);
 
-    // 2. Luminosité +50
-    t_bmp8 *bright = bmp8_loadImage("../image/barbara_gray.bmp");
-    bmp8_brightness(bright, 50);
-    bmp8_saveImage("barbara_gray_brightness.bmp", bright);
-    bmp8_free(bright);
+    // Appliquer la luminosité +50
+    bmp8_brightness(img, 50);
+    bmp8_saveImage("../Image/barbara_gray_brightness.bmp", img);
 
-    // 3. Seuillage (threshold = 128)
-    t_bmp8 *thresh = bmp8_loadImage("../image/barbara_gray.bmp");
-    bmp8_threshold(thresh, 128);
-    bmp8_saveImage("barbara_gray_threshold.bmp", thresh);
-    bmp8_free(thresh);
+    // Appliquer le seuillage à 128
+    bmp8_threshold(img, 128);
+    bmp8_saveImage("../Image/barbara_gray_threshold.bmp", img);
 
-    // 4. Flou (box blur)
-    t_bmp8 *blur = bmp8_loadImage("../image/barbara_gray.bmp");
-    bmp8_applyFilter(blur, (float **)kernel_box_blur, 3);
-    bmp8_saveImage("barbara_gray_blur.bmp", blur);
-    bmp8_free(blur);
+    // Appliquer les filtres de convolution
+    img = bmp8_loadImage(input);
+    float **k;
 
-    // 5. Flou gaussien
-    t_bmp8 *gauss = bmp8_loadImage("../image/barbara_gray.bmp");
-    bmp8_applyFilter(gauss, (float **)kernel_gaussian_blur, 3);
-    bmp8_saveImage("barbara_gray_gaussian.bmp", gauss);
-    bmp8_free(gauss);
-
-    // 6. Contours
-    t_bmp8 *contour = bmp8_loadImage("../image/barbara_gray.bmp");
-    bmp8_applyFilter(contour, (float **)kernel_outline, 3);
-    bmp8_saveImage("barbara_gray_outline.bmp", contour);
-    bmp8_free(contour);
-
-    // 7. Relief
-    t_bmp8 *emboss = bmp8_loadImage("../image/barbara_gray.bmp");
-    bmp8_applyFilter(emboss, (float **)kernel_emboss, 3);
-    bmp8_saveImage("barbara_gray_emboss.bmp", emboss);
-    bmp8_free(emboss);
-
-    // 8. Netteté
-    t_bmp8 *sharp = bmp8_loadImage("../image/barbara_gray.bmp");
-    bmp8_applyFilter(sharp, (float **)kernel_sharpen, 3);
-    bmp8_saveImage("barbara_gray_sharpen.bmp", sharp);
-    bmp8_free(sharp);
-
-    // Libération finale
+    k = toFloatPtr(kernel_box_blur);
+    bmp8_applyFilter(img, k, 3);
+    bmp8_saveImage("../Image/barbara_gray_boxblur.bmp", img);
     bmp8_free(img);
+
+    freeKernel(k);
+
+    k = toFloatPtr(kernel_gaussian_blur);
+    bmp8_applyFilter(img, k, 3);
+    bmp8_saveImage("../Image/barbara_gray_gaussian.bmp", img);
+    bmp8_free(img);
+    freeKernel(k);
+
+
+    k = toFloatPtr(kernel_outline);
+    bmp8_applyFilter(img, k, 3);
+    bmp8_saveImage("../Image/barbara_gray_outline.bmp", img);
+    bmp8_free(img);
+    freeKernel(k);
+
+
+    k = toFloatPtr(kernel_emboss);
+    bmp8_applyFilter(img, k, 3);
+    bmp8_saveImage("../Image/barbara_gray_emboss.bmp", img);
+    bmp8_free(img);
+    freeKernel(k);
+
+    k = toFloatPtr(kernel_sharpen);
+    bmp8_applyFilter(img, k, 3);
+    bmp8_saveImage("../Image/barbara_gray_sharpen.bmp", img);
+    bmp8_free(img);
+    freeKernel(k);
+
+    printf("\n Tous les filtres ont été appliqués et enregistrés.\n");
+
     return 0;
 }
+

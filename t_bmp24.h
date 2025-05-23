@@ -33,6 +33,7 @@ typedef struct {
     uint8_t blue;
 } t_pixel;
 
+
 typedef struct {
     t_bmp_header header;
     t_bmp_info header_info;
@@ -41,6 +42,8 @@ typedef struct {
     int colorDepth;
     t_pixel **data;
 } t_bmp24;
+
+
 
 // ================================ Déclarations des fonctions ===============================================
 t_pixel **bmp24_allocateDataPixels(int width, int height);

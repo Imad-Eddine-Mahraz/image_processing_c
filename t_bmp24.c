@@ -248,18 +248,20 @@ void bmp24_grayscale(t_bmp24 *img) {
 }
 
 void bmp24_brightness(t_bmp24 *img, int value) {
+    float factor = 1.0f + (value / 100.0f); // exemple : value = 50 => facteur = 1.5
     for (int y = 0; y < img->height; y++) {
         for (int x = 0; x < img->width; x++) {
-            int r = img->data[y][x].red + value;
-            int g = img->data[y][x].green + value;
-            int b = img->data[y][x].blue + value;
+            int r = img->data[y][x].red   * factor;
+            int g = img->data[y][x].green * factor;
+            int b = img->data[y][x].blue  * factor;
 
-            img->data[y][x].red   = (r > 255) ? 255 : (r < 0) ? 0 : r;
-            img->data[y][x].green = (g > 255) ? 255 : (g < 0) ? 0 : g;
-            img->data[y][x].blue  = (b > 255) ? 255 : (b < 0) ? 0 : b;
+            img->data[y][x].red   = (r > 255) ? 255 : r;
+            img->data[y][x].green = (g > 255) ? 255 : g;
+            img->data[y][x].blue  = (b > 255) ? 255 : b;
         }
     }
 }
+
 
 t_pixel bmp24_convolution(t_bmp24 *img, int x, int y, float **kernel, int kernelSize) {
     int offset = kernelSize / 2;
@@ -390,5 +392,3 @@ void bmp24_sharpen(t_bmp24 *img) {
     for (int i = 0; i < 3; i++) free(kernel[i]);
     free(kernel);
 }
-
-

@@ -64,42 +64,50 @@ int main() {
     // Afficher les informations
     printf("Image chargée : %dx%d, profondeur %d bits\n", img->width, img->height, img->colorDepth);
 
+    // Appliquer la luminosité +50
+
+    bmp24_brightness(img, 50);
+    bmp24_saveImage(img, "../Image/flowers_brightness.bmp");
+
     // Appliquer le négatif
+    img = bmp24_loadImage(input);
     bmp24_negative(img);
     bmp24_saveImage(img, "../Image/flowers_negative.bmp");
 
     // Appliquer la conversion en niveaux de gris
+    img = bmp24_loadImage(input);
     bmp24_grayscale(img);
     bmp24_saveImage(img, "../Image/flowers_grayscale.bmp");
-
-    // Appliquer la luminosité +50
-    bmp24_brightness(img, 50);
-    bmp24_saveImage(img, "../Image/flowers_brightness.bmp");
 
     // Appliquer les filtres de convolution (sans recharger, enchaînés)
     float **k;
 
     k = toFloatPtr(kernel_box_blur);
+    img = bmp24_loadImage(input);
     bmp24_applyFilter(img, k, 3);
     bmp24_saveImage(img, "../Image/flowers_boxblur.bmp");
     freeKernel(k);
 
     k = toFloatPtr(kernel_gaussian_blur);
+    img = bmp24_loadImage(input);
     bmp24_applyFilter(img, k, 3);
     bmp24_saveImage(img, "../Image/flowers_gaussian.bmp");
     freeKernel(k);
 
     k = toFloatPtr(kernel_outline);
+    img = bmp24_loadImage(input);
     bmp24_applyFilter(img, k, 3);
     bmp24_saveImage(img, "../Image/flowers_outline.bmp");
     freeKernel(k);
 
     k = toFloatPtr(kernel_emboss);
+    img = bmp24_loadImage(input);
     bmp24_applyFilter(img, k, 3);
     bmp24_saveImage(img, "../Image/flowers_emboss.bmp");
     freeKernel(k);
 
     k = toFloatPtr(kernel_sharpen);
+    img = bmp24_loadImage(input);
     bmp24_applyFilter(img, k, 3);
     bmp24_saveImage(img, "../Image/flowers_sharpen.bmp");
     freeKernel(k);

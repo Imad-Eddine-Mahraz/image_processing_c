@@ -209,3 +209,82 @@ void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
 }
 
 // ====================================================== Fonction de la partie 3 ======================================
+
+
+#define GRAY_LEVELS 256
+
+
+// 1. Calcul de l’histogramme d’une image en niveaux de gris
+unsigned int* bmp8_computeHistogram(t_bmp8* img) {
+    if (img == NULL || img->data == NULL) {
+        printf("Erreur : image invalide pour le calcul d'histogramme.\n");
+        return NULL;
+    }
+    unsigned int * hist = calloc(256,sizeof(unsigned int));
+    if (hist == NULL) {
+        printf("Erreur : échec d'allocation de la mémoire pour l'histogramme.\n");
+        return NULL;
+    }
+    for (int i = 0 ; i < img->dataSize ; i++) {
+        hist[img->data[i]]++;
+    }
+    return hist;
+}
+
+// 2. Calcul du CDF (histogramme cumulé) et normalisation
+unsigned int * bmp8_computeCDF(unsigned int * hist) {
+    if (hist == NULL) {
+        printf("Erreur : histogramme invalide pour le calcul de la CDF.\n");
+        return NULL;
+    }
+
+    unsigned int *cdf = calloc(256, sizeof(unsigned int));
+    if (cdf == NULL) {
+        printf("Erreur : échec d'allocation mémoire pour la CDF.\n");
+        return NULL;
+    }
+
+    cdf[0] = hist[0];
+    for (int i = 1; i < 256; i++) {
+        cdf[i] = cdf[i - 1] + hist[i];
+    }
+
+    return cdf;
+}
+
+
+// 3. Égalisation de l’image
+void bmp8_equalize(t_bmp8 * img, unsigned int * hist, unsigned int * hist_eq) {
+    if (img == NULL || img->data == NULL || hist == NULL || hist_eq == NULL) {
+        printf("Erreur : paramètres invalides pour l'égalisation.\n");
+        return;
+    }
+
+    unsigned int *cdf = bmp8_computeCDF(hist);
+    if (cdf == NULL) {
+        return;
+    }
+
+    // Chercher la première valeur de la CDF non nulle (CDF min)
+    unsigned int cdf_min = 0;
+    for (int i = 0; i < 256; i++) {
+        if (cdf[i] != 0) {
+            cdf_min = cdf[i];
+            break;
+        }
+    }
+
+    unsigned int totalPixels = img->width * img->height;
+
+    // Calcul de la transformation : histogramme égalisé
+    for (int i = 0; i < 256; i++) {
+        hist_eq[i] = (unsigned int)( ((float)(cdf[i] - cdf_min) / (totalPixels - cdf_min)) * 255.0 + 0.5 );
+    }
+
+    // Appliquer la transformation à l'image
+    for (unsigned int i = 0; i < img->dataSize; i++) {
+        img->data[i] = (unsigned char)hist_eq[img->data[i]];
+    }
+
+    free(cdf);
+}

@@ -77,6 +77,10 @@ void bmp24_outline(t_bmp24 *img);
 void bmp24_emboss(t_bmp24 *img);
 void bmp24_sharpen(t_bmp24 *img);
 
+void bmp24_computeHistograms(t_bmp24 *img, unsigned int *histR, unsigned int *histG, unsigned int *histB);
+unsigned int * bmp24_computeCDF(unsigned int * hist);
+void bmp24_equalize(t_bmp24 *img);
+
 
 // ============================================== Constante ==============================================================
 #define BITMAP_MAGIC 0x00 // offset 0

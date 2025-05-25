@@ -248,20 +248,18 @@ void bmp24_grayscale(t_bmp24 *img) {
 }
 
 void bmp24_brightness(t_bmp24 *img, int value) {
-    float factor = 1.0f + (value / 100.0f); // exemple : value = 50 => facteur = 1.5
     for (int y = 0; y < img->height; y++) {
         for (int x = 0; x < img->width; x++) {
-            int r = img->data[y][x].red   * factor;
-            int g = img->data[y][x].green * factor;
-            int b = img->data[y][x].blue  * factor;
+            int r = img->data[y][x].red + value;
+            int g = img->data[y][x].green + value;
+            int b = img->data[y][x].blue + value;
 
-            img->data[y][x].red   = (r > 255) ? 255 : r;
-            img->data[y][x].green = (g > 255) ? 255 : g;
-            img->data[y][x].blue  = (b > 255) ? 255 : b;
+            img->data[y][x].red   = (r > 255) ? 255 : (r < 0) ? 0 : r;
+            img->data[y][x].green = (g > 255) ? 255 : (g < 0) ? 0 : g;
+            img->data[y][x].blue  = (b > 255) ? 255 : (b < 0) ? 0 : b;
         }
     }
 }
-
 
 t_pixel bmp24_convolution(t_bmp24 *img, int x, int y, float **kernel, int kernelSize) {
     int offset = kernelSize / 2;
@@ -392,3 +390,128 @@ void bmp24_sharpen(t_bmp24 *img) {
     for (int i = 0; i < 3; i++) free(kernel[i]);
     free(kernel);
 }
+
+
+//  ==================================================== Fonction 3eme partie =============================
+
+void bmp24_computeHistograms(t_bmp24 *img, unsigned int *histR, unsigned int *histG, unsigned int *histB) {
+    if (img == NULL || histR == NULL || histG == NULL || histB == NULL) {
+        printf("Erreur : paramètres invalides pour le calcul d'histogrammes 24 bits.\n");
+        return;
+    }
+
+    // Initialiser les histogrammes à zéro
+    for (int i = 0; i < 256; i++) {
+        histR[i] = 0;
+        histG[i] = 0;
+        histB[i] = 0;
+    }
+
+    // Parcourir chaque pixel et incrémenter les histogrammes
+    for (int y = 0; y < img->height; y++) {
+        for (int x = 0; x < img->width; x++) {
+            histR[img->data[y][x].red]++;
+            histG[img->data[y][x].green]++;
+            histB[img->data[y][x].blue]++;
+        }
+    }
+}
+
+unsigned int * bmp24_computeCDF(unsigned int * hist) {
+    if (hist == NULL) {
+        printf("Erreur : histogramme invalide pour le calcul de la CDF.\n");
+        return NULL;
+    }
+
+    unsigned int *cdf = calloc(256, sizeof(unsigned int));
+    if (cdf == NULL) {
+        printf("Erreur : échec d'allocation mémoire pour la CDF.\n");
+        return NULL;
+    }
+
+    cdf[0] = hist[0];
+    for (int i = 1; i < 256; i++) {
+        cdf[i] = cdf[i - 1] + hist[i];
+    }
+
+    return cdf;
+}
+
+void bmp24_equalize(t_bmp24 * img) {
+    if (img == NULL) {
+        printf("Erreur : image invalide pour l'égalisation.\n");
+        return;
+    }
+
+    // Allouer et calculer les histogrammes
+    unsigned int *histR = calloc(256, sizeof(unsigned int));
+    unsigned int *histG = calloc(256, sizeof(unsigned int));
+    unsigned int *histB = calloc(256, sizeof(unsigned int));
+    if (histR == NULL || histG == NULL || histB == NULL) {
+        printf("Erreur : échec d'allocation mémoire pour les histogrammes.\n");
+        free(histR); free(histG); free(histB);
+        return;
+    }
+
+    for (int y = 0; y < img->height; y++) {
+        for (int x = 0; x < img->width; x++) {
+            histR[img->data[y][x].red]++;
+            histG[img->data[y][x].green]++;
+            histB[img->data[y][x].blue]++;
+        }
+    }
+
+    // Calculer les CDF
+    unsigned int *cdfR = calloc(256, sizeof(unsigned int));
+    unsigned int *cdfG = calloc(256, sizeof(unsigned int));
+    unsigned int *cdfB = calloc(256, sizeof(unsigned int));
+    if (cdfR == NULL || cdfG == NULL || cdfB == NULL) {
+        printf("Erreur : échec d'allocation mémoire pour les CDF.\n");
+        free(histR); free(histG); free(histB);
+        free(cdfR); free(cdfG); free(cdfB);
+        return;
+    }
+
+    cdfR[0] = histR[0];
+    cdfG[0] = histG[0];
+    cdfB[0] = histB[0];
+    for (int i = 1; i < 256; i++) {
+        cdfR[i] = cdfR[i - 1] + histR[i];
+        cdfG[i] = cdfG[i - 1] + histG[i];
+        cdfB[i] = cdfB[i - 1] + histB[i];
+    }
+
+    // Trouver CDF min pour chaque canal
+    unsigned int cdf_minR = 0, cdf_minG = 0, cdf_minB = 0;
+    for (int i = 0; i < 256; i++) {
+        if (cdf_minR == 0 && cdfR[i] != 0) cdf_minR = cdfR[i];
+        if (cdf_minG == 0 && cdfG[i] != 0) cdf_minG = cdfG[i];
+        if (cdf_minB == 0 && cdfB[i] != 0) cdf_minB = cdfB[i];
+    }
+
+    unsigned int totalPixels = img->width * img->height;
+
+    // Calculer les LUT (tableaux de correspondance égalisée)
+    unsigned char lutR[256], lutG[256], lutB[256];
+    for (int i = 0; i < 256; i++) {
+        lutR[i] = (unsigned char)(((float)(cdfR[i] - cdf_minR) / (totalPixels - cdf_minR)) * 255.0 + 0.5);
+        lutG[i] = (unsigned char)(((float)(cdfG[i] - cdf_minG) / (totalPixels - cdf_minG)) * 255.0 + 0.5);
+        lutB[i] = (unsigned char)(((float)(cdfB[i] - cdf_minB) / (totalPixels - cdf_minB)) * 255.0 + 0.5);
+    }
+
+    // Appliquer la transformation
+    for (int y = 0; y < img->height; y++) {
+        for (int x = 0; x < img->width; x++) {
+            img->data[y][x].red = lutR[img->data[y][x].red];
+            img->data[y][x].green = lutG[img->data[y][x].green];
+            img->data[y][x].blue = lutB[img->data[y][x].blue];
+        }
+    }
+
+    // Libérer la mémoire
+    free(histR); free(histG); free(histB);
+    free(cdfR); free(cdfG); free(cdfB);
+}
+
+
+

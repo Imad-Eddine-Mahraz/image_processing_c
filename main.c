@@ -2,6 +2,65 @@
 #include <stdlib.h>
 #include "t_bmp24.h"
 
+int main() {
+    const char *input = "../image/flowers_color.bmp";
+
+    // Charger l'image couleur
+    t_bmp24 *img = bmp24_loadImage(input);
+    if (!img) {
+        printf("Erreur :impossible de charger l'image couleur.\n");
+        return 1;
+    }
+    // Afficher les informations
+    printf("Image chargée : %dx%d, profondeur %d bits\n", img->width, img->height, img->colorDepth);
+    bmp24_equalize(img);
+    bmp24_saveImage(img, "../Image/flowers_equalize.bmp");
+    bmp24_free(img);
+    printf("\nLe filtre a été appliqués et enregistrés.\n");
+    return 0;
+}
+
+
+/* ==============================================================================================================
+
+MAIN PARTIE 3 BMP8
+
+// Chargement de l'image
+   const char *input = ".. /image/barbara_gray.bmp";
+   t_bmp8 *img = bmp8_loadImage("../image/barbara_gray.bmp");
+   if (img == NULL) {
+       return 1;
+   }
+
+   // Affichage des informations de l'image
+   bmp8_printInfo(img);
+
+   // Calcul de l'histogramme
+   unsigned int *hist = bmp8_computeHistogram(img);
+   if (hist == NULL) {
+       bmp8_free(img);
+       return 1;
+   }
+
+   // Tableau pour stocker l'histogramme égalisé
+   unsigned int hist_eq[256] = {0};
+
+   // Application de l'égalisation d'histogramme
+   bmp8_equalize(img, hist, hist_eq);
+
+   // Sauvegarde de l'image égalisée
+   bmp8_saveImage("../Image/barbara_gray_equalized.bmp", img);
+
+   // Nettoyage
+   free(hist);
+   bmp8_free(img);*/
+/*
+
+=================================================================================================================
+
+MAIN PARTIE 2
+
+
 // Noyaux 3x3 statiques
 float kernel_box_blur[3][3] = {
     {1.0/9, 1.0/9, 1.0/9},
@@ -117,3 +176,4 @@ int main() {
 
     return 0;
 }
+*/

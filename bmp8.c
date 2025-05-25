@@ -217,7 +217,7 @@ void bmp8_applyFilter(t_bmp8 *img, float **kernel, int kernelSize) {
 // 1. Calcul de l’histogramme d’une image en niveaux de gris
 unsigned int* bmp8_computeHistogram(t_bmp8* img) {
     if (img == NULL || img->data == NULL) {
-        printf("Erreur : image invalide pour le calcul d'histogramme.\n");
+        printf("Erreur : image invalide pour le calcul d'hisogramme.\n");
         return NULL;
     }
     unsigned int * hist = calloc(256,sizeof(unsigned int));

@@ -466,7 +466,7 @@ void bmp24_equalize(t_bmp24 * img) {
     unsigned int *cdfG = calloc(256, sizeof(unsigned int));
     unsigned int *cdfB = calloc(256, sizeof(unsigned int));
     if (cdfR == NULL || cdfG == NULL || cdfB == NULL) {
-        printf("Erreur : échec d'allocation mémoire pour les CDF.\n");
+        printf("Erreur : échec d'allocation mémoir pour les CDF.\n");
         free(histR); free(histG); free(histB);
         free(cdfR); free(cdfG); free(cdfB);
         return;

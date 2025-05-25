@@ -222,7 +222,7 @@ unsigned int* bmp8_computeHistogram(t_bmp8* img) {
     }
     unsigned int * hist = calloc(256,sizeof(unsigned int));
     if (hist == NULL) {
-        printf("Erreur : échec d'allocation de la mémoire pour l'histogramme.\n");
+        printf("Erreur : échec d'allocation de la mémoire pour l'histograme.\n");
         return NULL;
     }
     for (int i = 0 ; i < img->dataSize ; i++) {

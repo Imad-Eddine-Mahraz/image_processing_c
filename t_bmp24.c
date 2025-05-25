@@ -439,7 +439,7 @@ unsigned int * bmp24_computeCDF(unsigned int * hist) {
 
 void bmp24_equalize(t_bmp24 * img) {
     if (img == NULL) {
-        printf("Erreur : image invalide pour l'égalisation.\n");
+        printf("Erreur : image invalide pour l'egalisation.\n");
         return;
     }
 

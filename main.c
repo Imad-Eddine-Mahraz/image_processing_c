@@ -1,67 +1,9 @@
-#include <stdio.h>
+1#include <stdio.h>
 #include <stdlib.h>
+#include "bmp8.h"
 #include "t_bmp24.h"
 
-int main() {
-    const char *input = "../image/flowers_color.bmp";
-
-    // Charger l'image couleur
-    t_bmp24 *img = bmp24_loadImage(input);
-    if (!img) {
-        printf("Erreur :impossible de charger l'image couleur.\n");
-        return 1;
-    }
-    // Afficher les informations
-    printf("Image chargée : %dx%d, profondeur %d bits\n", img->width, img->height, img->colorDepth);
-    bmp24_equalize(img);
-    bmp24_saveImage(img, "../Image/flowers_equalize.bmp");
-    bmp24_free(img);
-    printf("\nLe filtre a été appliqués et enregistrés.\n");
-    return 0;
-}
-
-
-/* ==============================================================================================================
-
-MAIN PARTIE 3 BMP8
-
-// Chargement de l'image
-   const char *input = ".. /image/barbara_gray.bmp";
-   t_bmp8 *img = bmp8_loadImage("../image/barbara_gray.bmp");
-   if (img == NULL) {
-       return 1;
-   }
-
-   // Affichage des informations de l'image
-   bmp8_printInfo(img);
-
-   // Calcul de l'histogramme
-   unsigned int *hist = bmp8_computeHistogram(img);
-   if (hist == NULL) {
-       bmp8_free(img);
-       return 1;
-   }
-
-   // Tableau pour stocker l'histogramme égalisé
-   unsigned int hist_eq[256] = {0};
-
-   // Application de l'égalisation d'histogramme
-   bmp8_equalize(img, hist, hist_eq);
-
-   // Sauvegarde de l'image égalisée
-   bmp8_saveImage("../Image/barbara_gray_equalized.bmp", img);
-
-   // Nettoyage
-   free(hist);
-   bmp8_free(img);*/
-/*
-
-=================================================================================================================
-
-MAIN PARTIE 2
-
-
-// Noyaux 3x3 statiques
+// ----------- Réutilisation des noyaux 3x3 -----------
 float kernel_box_blur[3][3] = {
     {1.0/9, 1.0/9, 1.0/9},
     {1.0/9, 1.0/9, 1.0/9},
@@ -110,70 +52,188 @@ void freeKernel(float **kernel) {
     free(kernel);
 }
 
-int main() {
-    const char *input = "../image/flowers_color.bmp";
+// ----------- Fonctions de chaque "main" -----------
+void runBMP8BaseFilters() {
+    const char *input = "../image/barbara_gray.bmp";
 
-    // Charger l'image couleur
-    t_bmp24 *img = bmp24_loadImage(input);
+    t_bmp8 *img = bmp8_loadImage(input);
     if (!img) {
-        printf("Erreur :impossible de charger l'image couleur.\n");
-        return 1;
+        printf("Erreur de chargement de l'image.\n");
+        return;
     }
 
-    // Afficher les informations
-    printf("Image chargée : %dx%d, profondeur %d bits\n", img->width, img->height, img->colorDepth);
+    bmp8_negative(img);
+    bmp8_saveImage("../Image/barbara_gray_negative.bmp", img);
 
-    // Appliquer la luminosité +50
+    img = bmp8_loadImage(input);
+    bmp8_brightness(img, 50);
+    bmp8_saveImage("../Image/barbara_gray_brightness.bmp", img);
 
-    bmp24_brightness(img, 50);
-    bmp24_saveImage(img, "../Image/flowers_brightness.bmp");
+    img = bmp8_loadImage(input);
+    bmp8_threshold(img, 128);
+    bmp8_saveImage("../Image/barbara_gray_threshold.bmp", img);
 
-    // Appliquer le négatif
+    bmp8_free(img);
+    printf("Filtres de base BMP8 appliqués.\n");
+}
+
+void runBMP8ConvolutionFilters() {
+    const char *input = "../image/barbara_gray.bmp";
+    t_bmp8 *img;
+    float **k;
+
+    img = bmp8_loadImage(input);
+    k = toFloatPtr(kernel_box_blur);
+    bmp8_applyFilter(img, k, 3);
+    bmp8_saveImage("../Image/barbara_gray_boxblur.bmp", img);
+    bmp8_free(img);
+    freeKernel(k);
+
+    img = bmp8_loadImage(input);
+    k = toFloatPtr(kernel_gaussian_blur);
+    bmp8_applyFilter(img, k, 3);
+    bmp8_saveImage("../Image/barbara_gray_gaussian.bmp", img);
+    bmp8_free(img);
+    freeKernel(k);
+
+    img = bmp8_loadImage(input);
+    k = toFloatPtr(kernel_outline);
+    bmp8_applyFilter(img, k, 3);
+    bmp8_saveImage("../Image/barbara_gray_outline.bmp", img);
+    bmp8_free(img);
+    freeKernel(k);
+
+    img = bmp8_loadImage(input);
+    k = toFloatPtr(kernel_emboss);
+    bmp8_applyFilter(img, k, 3);
+    bmp8_saveImage("../Image/barbara_gray_emboss.bmp", img);
+    bmp8_free(img);
+    freeKernel(k);
+
+    img = bmp8_loadImage(input);
+    k = toFloatPtr(kernel_sharpen);
+    bmp8_applyFilter(img, k, 3);
+    bmp8_saveImage("../Image/barbara_gray_sharpen.bmp", img);
+    bmp8_free(img);
+    freeKernel(k);
+
+    printf("Filtres convolution BMP8 appliqués.\n");
+}
+
+void runBMP8Equalization() {
+    t_bmp8 *img = bmp8_loadImage("../image/barbara_gray.bmp");
+    if (!img) {
+        printf("Erreur de chargement.\n");
+        return;
+    }
+
+    unsigned int *hist = bmp8_computeHistogram(img);
+    unsigned int hist_eq[256] = {0};
+
+    bmp8_equalize(img, hist, hist_eq);
+    bmp8_saveImage("../Image/barbara_gray_equalized.bmp", img);
+
+    free(hist);
+    bmp8_free(img);
+
+    printf("Egalisation BMP8 appliquée.\n");
+}
+
+void runBMP24Filters() {
+    const char *input = "../image/flowers_color.bmp";
+
+    t_bmp24 *img = bmp24_loadImage(input);
+    if (!img) {
+        printf("Erreur chargement image couleur.\n");
+        return;
+    }
+
     img = bmp24_loadImage(input);
     bmp24_negative(img);
     bmp24_saveImage(img, "../Image/flowers_negative.bmp");
 
-    // Appliquer la conversion en niveaux de gris
     img = bmp24_loadImage(input);
     bmp24_grayscale(img);
     bmp24_saveImage(img, "../Image/flowers_grayscale.bmp");
 
-    // Appliquer les filtres de convolution (sans recharger, enchaînés)
+    img = bmp24_loadImage(input);
+    bmp24_brightness(img, 50);
+    bmp24_saveImage(img, "../Image/flowers_brightness.bmp");
+
     float **k;
 
-    k = toFloatPtr(kernel_box_blur);
     img = bmp24_loadImage(input);
+    k = toFloatPtr(kernel_box_blur);
     bmp24_applyFilter(img, k, 3);
     bmp24_saveImage(img, "../Image/flowers_boxblur.bmp");
     freeKernel(k);
 
-    k = toFloatPtr(kernel_gaussian_blur);
     img = bmp24_loadImage(input);
+    k = toFloatPtr(kernel_gaussian_blur);
     bmp24_applyFilter(img, k, 3);
     bmp24_saveImage(img, "../Image/flowers_gaussian.bmp");
     freeKernel(k);
 
-    k = toFloatPtr(kernel_outline);
     img = bmp24_loadImage(input);
+    k = toFloatPtr(kernel_outline);
     bmp24_applyFilter(img, k, 3);
     bmp24_saveImage(img, "../Image/flowers_outline.bmp");
     freeKernel(k);
 
-    k = toFloatPtr(kernel_emboss);
     img = bmp24_loadImage(input);
+    k = toFloatPtr(kernel_emboss);
     bmp24_applyFilter(img, k, 3);
     bmp24_saveImage(img, "../Image/flowers_emboss.bmp");
     freeKernel(k);
 
-    k = toFloatPtr(kernel_sharpen);
     img = bmp24_loadImage(input);
+    k = toFloatPtr(kernel_sharpen);
     bmp24_applyFilter(img, k, 3);
     bmp24_saveImage(img, "../Image/flowers_sharpen.bmp");
     freeKernel(k);
 
     bmp24_free(img);
-    printf("\nTous les filtres ont été appliqués et enregistrés.\n");
+
+    printf("Filtres BMP24 appliqués.\n");
+}
+
+void runBMP24Equalization() {
+    t_bmp24 *img = bmp24_loadImage("../image/flowers_color.bmp");
+    if (!img) {
+        printf("Erreur chargement BMP24.\n");
+        return;
+    }
+    bmp24_equalize(img);
+    bmp24_saveImage(img, "../Image/flowers_equalize.bmp");
+    bmp24_free(img);
+
+    printf(" Egalisation BMP24 appliquee.\n");
+}
+
+// ----------- Main principal avec menu -----------
+int main() {
+    int choix = -1;
+
+    do {
+        printf("\n=== MENU PRINCIPAL ===\n");
+        printf("1. Filtres simples BMP8 (negatif, luminosite, seuillage)\n");
+        printf("2. Filtres convolutifs BMP8\n");
+        printf("3. Egalisation d’histogramme BMP8\n");
+        printf("4. Filtres BMP24 (couleur)\n");
+        printf("5. Egalisation BMP24 (couleur)\n");
+        printf("0. Quitter\n> ");
+        scanf("%d", &choix);
+
+        switch (choix) {
+            case 1: runBMP8BaseFilters(); break;
+            case 2: runBMP8ConvolutionFilters(); break;
+            case 3: runBMP8Equalization(); break;
+            case 4: runBMP24Filters(); break;
+            case 5: runBMP24Equalization(); break;
+            case 0: printf("Fin du programme.\n"); break;
+            default: printf("Choix invalide.\n"); break;
+        }
+    } while (choix != 0);
 
     return 0;
 }
-*/

@@ -65,7 +65,7 @@ t_bmp8 * bmp8_loadImage(const char * filename) {
 void bmp8_saveImage(const char * filename, t_bmp8 * img) {
     FILE *file = fopen(filename, "wb");
     if (file == NULL) {
-        printf("Erreur lors de l'ouverture du fichier pour l'écriture\n");
+        printf("Erreur lors de l'ouverture du fichier pour l'ecriture\n");
         return;
     }
 
@@ -91,7 +91,7 @@ void bmp8_saveImage(const char * filename, t_bmp8 * img) {
     }
 
     fclose(file);
-    printf("Image enregistrée avec succès dans le dossier Images'%s'\n", filename);
+    printf("Image enregistree avec succes dans le dossier Images'%s'\n", filename);
 }
 
 

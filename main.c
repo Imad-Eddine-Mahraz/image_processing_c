@@ -1,4 +1,4 @@
-1#include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "bmp8.h"
 #include "t_bmp24.h"
